@@ -57,11 +57,11 @@ const getLastPrice = (cur) => new Promise((resolve, reject) => {
   })
 })
 
-const convertToZar = (usd) => {
+const getZARToUSDRate = () => {
   return new Promise((res, rej) => {
     request.get(`https://api.fixer.io/latest?base=USD&symbols=ZAR`,
       function(error, response, body) {
-        res(Number(JSON.parse(body).rates.ZAR) * usd)
+        res(Number(JSON.parse(body).rates.ZAR))
       }
     );
   })
@@ -129,8 +129,9 @@ const displayHoldings = () =>
         console.log('TOTAL: \t\tUSD ' + totalHoldings.toFixed(DECIMAL_POINTS))
         return getUSDholding().then(res => {
           console.log('WALLET:\t\tUSD ' + Number(res[0].amount).toFixed(DECIMAL_POINTS))
-          return convertToZar(totalHoldings + Number(res[0].amount)).then(zar => {
-            console.log('\t\tZAR ' + zar.toFixed(DECIMAL_POINTS))
+          return getZARToUSDRate().then(rate => {
+            const ZARHolding = (totalHoldings + Number(res[0].amount)) * rate;
+            console.log('\t\tZAR ' + ZARHolding.toFixed(DECIMAL_POINTS) + ' @ ' + rate)
             return savePositions(holdingsValue);
           }).catch(Promise.reject)
         }).catch(Promise.reject)
